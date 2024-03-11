@@ -1,0 +1,132 @@
+diff --git a/node_modules/@likashefqet/react-native-image-zoom/lib/typescript/ImageZoom.d.ts b/node_modules/@likashefqet/react-native-image-zoom/lib/typescript/ImageZoom.d.ts
+index f33d200..3a764ed 100644
+--- a/node_modules/@likashefqet/react-native-image-zoom/lib/typescript/ImageZoom.d.ts
++++ b/node_modules/@likashefqet/react-native-image-zoom/lib/typescript/ImageZoom.d.ts
+@@ -15,6 +15,8 @@ declare const _default: React.ForwardRefExoticComponent<Omit<import("react-nativ
+     onPinchEnd?: Function | undefined;
+     onPanStart?: Function | undefined;
+     onPanEnd?: Function | undefined;
++    onPress?: Function | undefined;
++    ExclusiveTapGestures?: never[] | undefined;
+     source?: import("react-native").ImageSourcePropType | undefined;
+ } & React.RefAttributes<unknown>>;
+ export default _default;
+diff --git a/node_modules/@likashefqet/react-native-image-zoom/src/ImageZoom.tsx b/node_modules/@likashefqet/react-native-image-zoom/src/ImageZoom.tsx
+index 08ae41f..f3b626e 100644
+--- a/node_modules/@likashefqet/react-native-image-zoom/src/ImageZoom.tsx
++++ b/node_modules/@likashefqet/react-native-image-zoom/src/ImageZoom.tsx
+@@ -31,6 +31,7 @@ export default forwardRef(function ImageZoom(
+     onPinchEnd,
+     onPanStart,
+     onPanEnd,
++    onPress,
+     onLayout,
+     style = {},
+     ...props
+@@ -56,6 +57,7 @@ export default forwardRef(function ImageZoom(
+     onPinchEnd,
+     onPanStart,
+     onPanEnd,
++    onPress,
+   });
+ 
+   useImperativeHandle(
+diff --git a/node_modules/@likashefqet/react-native-image-zoom/src/hooks/useGestures.ts b/node_modules/@likashefqet/react-native-image-zoom/src/hooks/useGestures.ts
+index f41c61c..98f200e 100644
+--- a/node_modules/@likashefqet/react-native-image-zoom/src/hooks/useGestures.ts
++++ b/node_modules/@likashefqet/react-native-image-zoom/src/hooks/useGestures.ts
+@@ -36,7 +36,8 @@ export const useGestures = ({
+   onPinchEnd,
+   onPanStart,
+   onPanEnd,
+-}: ImageZoomUseGesturesProps) => {
++  onPress,
++}: ImageZoomUseGesturesProps ) => {
+   const isInteracting = useRef(false);
+   const isPanning = useRef(false);
+   const isPinching = useRef(false);
+@@ -131,6 +132,8 @@ export const useGestures = ({
+     }
+   };
+ 
++
++
+   const onPinchStarted = () => {
+     onInteractionStarted();
+     isPinching.current = true;
+@@ -149,12 +152,17 @@ export const useGestures = ({
+     onPanStart?.();
+   };
+ 
++  const onPressed = (e) => {
++    onPress?.(e);
++  }
++
+   const onPanEnded = () => {
+     isPanning.current = false;
+     onPanEnd?.();
+     onInteractionEnded();
+   };
+ 
++
+   const panGesture = Gesture.Pan()
+     .enabled(isPanEnabled)
+     .minPointers(minPanPointers)
+@@ -172,6 +180,8 @@ export const useGestures = ({
+       runOnJS(onPanEnded)();
+     });
+ 
++   
++
+   const pinchGesture = Gesture.Pinch()
+     .enabled(isPinchEnabled)
+     .onStart(
+@@ -220,6 +230,17 @@ export const useGestures = ({
+       }
+     );
+ 
++
++    const onetapGesture = Gesture.Tap()
++    .numberOfTaps(1)
++    .maxDuration(250)
++    .onStart(
++      (event: GestureStateChangeEvent<TapGestureHandlerEventPayload>)=>{
++        runOnJS(onPressed)(event);
++      }
++    )
++
++    
+   const animatedStyle = useAnimatedStyle(() => ({
+     transform: [
+       { translateX: translate.x.value },
+@@ -231,8 +252,9 @@ export const useGestures = ({
+   }));
+ 
+   const simultaneousGestures = Gesture.Simultaneous(pinchGesture, panGesture);
++  const tapGesture = Gesture.Exclusive(doubleTapGesture, onetapGesture);
+   const gestures = isDoubleTapEnabled
+-    ? Gesture.Race(doubleTapGesture, simultaneousGestures)
++    ? Gesture.Race(tapGesture, simultaneousGestures)
+     : simultaneousGestures;
+ 
+   return { gestures, animatedStyle, reset };
+diff --git a/node_modules/@likashefqet/react-native-image-zoom/src/types.ts b/node_modules/@likashefqet/react-native-image-zoom/src/types.ts
+index 62dd3ce..e898024 100644
+--- a/node_modules/@likashefqet/react-native-image-zoom/src/types.ts
++++ b/node_modules/@likashefqet/react-native-image-zoom/src/types.ts
+@@ -68,6 +68,9 @@ export type ImageZoomProps = Omit<ImageProps, 'source'> & {
+    * A callback triggered when the image panning ends.
+    */
+   onPanEnd?: Function;
++
++  onPress?: Function;
++
+   /**
+    * @see https://facebook.github.io/react-native/docs/image.html#source
+    * @default undefined
+@@ -136,4 +139,5 @@ export type ImageZoomUseGesturesProps = Pick<
+     | 'onPinchEnd'
+     | 'onPanStart'
+     | 'onPanEnd'
++    | 'onPress'
+   >;

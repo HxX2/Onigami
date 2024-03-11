@@ -5,7 +5,7 @@ module.exports = {
   safelist: [
     {
       pattern:
-        /(text|bg)-(darkBlue)/,
+        /(text|bg)-(darkBlue|lightBlue|NavBarColor)/,
     },
   ],
   presets: [require("nativewind/preset")],
@@ -13,6 +13,8 @@ module.exports = {
     extend: {
       colors: {
         'darkBlue': '#181D20',
+        'NavBarColor': 'rgb(28,34,38,0.9)',
+        'lightBlue': 'rgba(13, 28, 43, 1)',
       },
       fontFamily: {
         'heebo': ['Heebo', 'sans-serif'],

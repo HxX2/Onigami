@@ -3,20 +3,42 @@
     "scheme": "acme",
     "userInterfaceStyle": "automatic",
     "orientation": "default",
+    "main": "expo-router/entry",
     "web": {
       "output": "static",
       "bundler": "metro"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://n"
-        }
-      ]
+      
+        "@react-native-google-signin/google-signin",
+        [
+          "expo-router",
+          {
+            "origin": "https://n"
+          }
+        ]
+      
     ],
     "name": "Onigami",
     "slug": "Onigami",
-    "babel": { "include": [ "@ui-kitten/components" ] }
+    "babel": {
+      "include": [
+        "@ui-kitten/components"
+      ]
+    },
+    "android": {
+      "package": "com.anonymous.Onigami"
+    },
+    "ios": {
+      "bundleIdentifier": "com.anonymous.Onigami"
+    },
+    "extra": {
+      "router": {
+        "origin": "https://n"
+      },
+      "eas": {
+        "projectId": "a2aa781b-c90b-44a7-8149-b84607dcc1cf"
+      }
+    }
   }
 }
